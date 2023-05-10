@@ -6,8 +6,8 @@
  
 3. Adds the accs_hist table in the flask_db database:  Think of this application as a room access control application, where everyone who will enter a restricted room must scan the face first. Data on personnel entering the restricted room will be recorded in the database. Here I add a new table with the name accs_hist (access history) as a table for storing incoming personnel data. Open phpMyAdmin, select the flask_db database, paste the SQL script into the query window in the SQL phpMyAdmin tab, then click the Go button. ![phpmyadmin_flaskdb](https://github.com/md-irfan-hasan-fahim/Flask-OpenCV-Registrasi-Face-Recognition/assets/81842071/33ac7448-a617-405e-8b31-4f98eea45711)
 <br>
-The accs_hist table was successfully created.
-![accs_hist_table](https://github.com/md-irfan-hasan-fahim/Flask-OpenCV-Registrasi-Face-Recognition/assets/81842071/f6245183-3eef-4536-bb34-602a6dc8aa96) 
+The accs_hist table was successfully created.![accs_hist_table](https://github.com/md-irfan-hasan-fahim/Flask-OpenCV-Registrasi-Face-Recognition/assets/81842071/d27cd019-c2d0-433c-bd57-5489c2ab7fc8)
+
 <br>
 
 4. Create Pycharm Project and Install Packages:   Create new project on any IDE then name the project FlaskOpenv_FaceRecognition. After that click the button Create
