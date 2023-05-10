@@ -1,17 +1,11 @@
-from flask import Flask, render_template, request, session, redirect, url_for, Response, jsonify
+from flask import Flask, render_template, request, redirect, url_for, Response
 import mysql.connector
 import cv2
 from PIL import Image
 import numpy as np
 import os
-import time
-from datetime import date
  
 app = Flask(__name__)
- 
-cnt = 0
-pause_cnt = 0
-justscanned = False
  
 mydb = mysql.connector.connect(
     host="localhost",
@@ -105,11 +99,6 @@ def face_recognition():  # generate frame by frame from camera
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         features = classifier.detectMultiScale(gray_image, scaleFactor, minNeighbors)
  
-        global justscanned
-        global pause_cnt
- 
-        pause_cnt += 1
- 
         coords = []
  
         for (x, y, w, h) in features:
@@ -117,48 +106,17 @@ def face_recognition():  # generate frame by frame from camera
             id, pred = clf.predict(gray_image[y:y + h, x:x + w])
             confidence = int(100 * (1 - pred / 300))
  
-            if confidence > 70 and not justscanned:
-                global cnt
-                cnt += 1
+            mycursor.execute("select b.prs_name "
+                             "  from img_dataset a "
+                             "  left join prs_mstr b on a.img_person = b.prs_nbr "
+                             " where img_id = " + str(id))
+            s = mycursor.fetchone()
+            s = '' + ''.join(s)
  
-                n = (100 / 30) * cnt
-                # w_filled = (n / 100) * w
-                w_filled = (cnt / 30) * w
- 
-                cv2.putText(img, str(int(n))+' %', (x + 20, y + h + 28), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (153, 255, 255), 2, cv2.LINE_AA)
- 
-                cv2.rectangle(img, (x, y + h + 40), (x + w, y + h + 50), color, 2)
-                cv2.rectangle(img, (x, y + h + 40), (x + int(w_filled), y + h + 50), (153, 255, 255), cv2.FILLED)
- 
-                mycursor.execute("select a.img_person, b.prs_name, b.prs_skill "
-                                 "  from img_dataset a "
-                                 "  left join prs_mstr b on a.img_person = b.prs_nbr "
-                                 " where img_id = " + str(id))
-                row = mycursor.fetchone()
-                pnbr = row[0]
-                pname = row[1]
-                pskill = row[2]
- 
-                if int(cnt) == 30:
-                    cnt = 0
- 
-                    mycursor.execute("insert into accs_hist (accs_date, accs_prsn) values('"+str(date.today())+"', '" + pnbr + "')")
-                    mydb.commit()
- 
-                    cv2.putText(img, pname + ' | ' + pskill, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (153, 255, 255), 2, cv2.LINE_AA)
-                    time.sleep(1)
- 
-                    justscanned = True
-                    pause_cnt = 0
- 
+            if confidence > 70:
+                cv2.putText(img, s, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 1, cv2.LINE_AA)
             else:
-                if not justscanned:
-                    cv2.putText(img, 'UNKNOWN', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
-                else:
-                    cv2.putText(img, ' ', (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,cv2.LINE_AA)
- 
-                if pause_cnt > 80:
-                    justscanned = False
+                cv2.putText(img, "UNKNOWN", (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
  
             coords = [x, y, w, h]
         return coords
@@ -171,7 +129,7 @@ def face_recognition():  # generate frame by frame from camera
     clf = cv2.face.LBPHFaceRecognizer_create()
     clf.read("classifier.xml")
  
-    wCam, hCam = 400, 400
+    wCam, hCam = 500, 400
  
     cap = cv2.VideoCapture(0)
     cap.set(3, wCam)
@@ -182,13 +140,11 @@ def face_recognition():  # generate frame by frame from camera
         img = recognize(img, clf, faceCascade)
  
         frame = cv2.imencode('.jpg', img)[1].tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+        yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
  
         key = cv2.waitKey(1)
         if key == 27:
             break
- 
  
  
 @app.route('/')
@@ -229,7 +185,6 @@ def vidfeed_dataset(nbr):
     #Video streaming route. Put this in the src attribute of an img tag
     return Response(generate_dataset(nbr), mimetype='multipart/x-mixed-replace; boundary=frame')
  
- 
 @app.route('/video_feed')
 def video_feed():
     # Video streaming route. Put this in the src attribute of an img tag
@@ -237,54 +192,7 @@ def video_feed():
  
 @app.route('/fr_page')
 def fr_page():
-    """Video streaming home page."""
-    mycursor.execute("select a.accs_id, a.accs_prsn, b.prs_name, b.prs_skill, a.accs_added "
-                     "  from accs_hist a "
-                     "  left join prs_mstr b on a.accs_prsn = b.prs_nbr "
-                     " where a.accs_date = curdate() "
-                     " order by 1 desc")
-    data = mycursor.fetchall()
- 
-    return render_template('fr_page.html', data=data)
- 
- 
-@app.route('/countTodayScan')
-def countTodayScan():
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="",
-        database="flask_db"
-    )
-    mycursor = mydb.cursor()
- 
-    mycursor.execute("select count(*) "
-                     "  from accs_hist "
-                     " where accs_date = curdate() ")
-    row = mycursor.fetchone()
-    rowcount = row[0]
- 
-    return jsonify({'rowcount': rowcount})
- 
- 
-@app.route('/loadData', methods = ['GET', 'POST'])
-def loadData():
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="",
-        database="flask_db"
-    )
-    mycursor = mydb.cursor()
- 
-    mycursor.execute("select a.accs_id, a.accs_prsn, b.prs_name, b.prs_skill, date_format(a.accs_added, '%H:%i:%s') "
-                     "  from accs_hist a "
-                     "  left join prs_mstr b on a.accs_prsn = b.prs_nbr "
-                     " where a.accs_date = curdate() "
-                     " order by 1 desc")
-    data = mycursor.fetchall()
- 
-    return jsonify(response = data)
+    return render_template('fr_page.html')
  
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=5000, debug=True)
