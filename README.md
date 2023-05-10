@@ -5,7 +5,7 @@
 
 3. Create Pycharm Project and Install Packages:   Create new project on any IDE then name the project FlaskOpenv_FaceRecognition. After that click the button Create
 
-4.Package-packages that must be installed for this project face recognition include:
+4.Package-packages that must be installed for this project face recognition include:<br>
 a.Flask
 b.mysql-connector
 c.opencv-python
