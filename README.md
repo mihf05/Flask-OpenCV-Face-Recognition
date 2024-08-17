@@ -1,10 +1,38 @@
 # Flask-OpenCV-Face-Recognition
-1. Create MySQL database:  First of all create a MySQL database with the name flask_db via phpMyAdmin. This PhpMyAdmin is part of XAMPP.Open phpMyAdmin via browser then Create database flask_db.
 
-2. After successfully creating the flask_db database, copy the SQL script below to create a master personnel table prs_mstr and dataset image tables img_dataset. Then follow the steps as in the following picture:<br>![Click flask_db](https://github.com/md-irfan-hasan-fahim/Flask-OpenCV-Registrasi-Face-Recognition/assets/81842071/d4f771b9-367c-49a7-b510-68474b5efa1d) and look like this:  ![table_created](https://github.com/md-irfan-hasan-fahim/Flask-OpenCV-Registrasi-Face-Recognition/assets/81842071/345a2fdd-c8cb-4210-a994-a7c0afb4786a)
- 
-3. Adds the accs_hist table in the flask_db database:  Think of this application as a room access control application, where everyone who will enter a restricted room must scan the face first. Data on personnel entering the restricted room will be recorded in the database. Here I add a new table with the name accs_hist (access history) as a table for storing incoming personnel data. Open phpMyAdmin, select the flask_db database, paste the SQL script into the query window in the SQL phpMyAdmin tab, then click the Go button. ![phpmyadmin_flaskdb](https://github.com/md-irfan-hasan-fahim/Flask-OpenCV-Registrasi-Face-Recognition/assets/81842071/33ac7448-a617-405e-8b31-4f98eea45711) The accs_hist table was successfully created.
+1. Setup MongoDB:
+   - Install MongoDB on your system if not already installed.
+   - Start the MongoDB service.
+   - Create a new database named `flask_db` using the MongoDB shell or a GUI tool like MongoDB Compass.
 
-4. Create Pycharm Project and Install Packages:   Create new project on any IDE then name the project FlaskOpenv_FaceRecognition. After that click the button Create. Show the Setting menu by clicking File  Settings... Then point to the sub menu Python Interpreter. Click icon plus to display the Available Packages window and install package-package required in this project.
-5. Package-packages that must be installed for this project face recognition include:<br>Flask<br>mysql-connector<br>opencv-python<br>opencv-contrib-python<br>Pillow<br>
-6. then extract it into the Pycharm root project folder lask-OpenCV-Registrasi-Face-Recognition this.
+2. Database Structure:
+   The application uses the following collections in the `flask_db` database:
+   - `prs_mstr`: Stores master personnel data.
+   - `img_dataset`: Stores dataset image information.
+   - `accs_hist`: Stores access history (personnel entering restricted areas).
+
+3. Application Overview:
+   This is a room access control application where individuals must undergo facial scanning before entering restricted areas. The system records personnel data in the database upon entry.
+
+4. Create Project and Install Packages:
+   - Create a new project in your preferred IDE (e.g., PyCharm, VSCode).
+   - Name the project `FlaskOpenCV_FaceRecognition`.
+   - Set up a virtual environment for the project.
+   - Install the required packages using pip:
+     ```
+     pip install Flask pymongo opencv-python opencv-contrib-python Pillow
+     ```
+
+5. Project Setup:
+   - Clone this repository or download the source code.
+   - Extract the contents into your project's root folder.
+
+6. Configuration:
+   - Update the MongoDB connection string in `app.py` if your MongoDB setup differs from the default (localhost:27017).
+   - Ensure that the paths to resources (like haarcascade files) are correct for your system.
+
+7. Running the Application:
+   - Run `app.py` to start the Flask server.
+   - Access the application through your web browser at `http://localhost:5000`.
+
+Note: Make sure to handle sensitive data securely and follow best practices for production deployments.

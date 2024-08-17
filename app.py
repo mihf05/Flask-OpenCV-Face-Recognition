@@ -1,25 +1,26 @@
-from flask import Flask, render_template, request, session, redirect, url_for, Response, jsonify
-import mysql.connector
+from flask import Flask, render_template, request, redirect, url_for, Response, jsonify
+from pymongo import MongoClient
 import cv2
 from PIL import Image
 import numpy as np
 import os
 import time
-from datetime import date
- 
+from datetime import date, datetime
+import sys
+
 app = Flask(__name__)
  
 cnt = 0
 pause_cnt = 0
 justscanned = False
  
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="",
-    database="flask_db"
-)
-mycursor = mydb.cursor()
+try:
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["flask_db"]
+    print("Connected to MongoDB successfully!")
+except ConnectionFailure as e:
+    print(f"Could not connect to MongoDB: {e}")
+    sys.exit(1)
  
  
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Generate dataset >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -40,9 +41,8 @@ def generate_dataset(nbr):
  
     cap = cv2.VideoCapture(0)
  
-    mycursor.execute("select ifnull(max(img_id), 0) from img_dataset")
-    row = mycursor.fetchone()
-    lastid = row[0]
+    last_img = db.img_dataset.find_one(sort=[("img_id", -1)])
+    lastid = last_img['img_id'] if last_img else 0
  
     img_id = lastid
     max_imgid = img_id + 100
@@ -60,9 +60,14 @@ def generate_dataset(nbr):
             cv2.imwrite(file_name_path, face)
             cv2.putText(face, str(count_img), (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
  
-            mycursor.execute("""INSERT INTO `img_dataset` (`img_id`, `img_person`) VALUES
-                                ('{}', '{}')""".format(img_id, nbr))
-            mydb.commit()
+            try:
+                db.img_dataset.insert_one({
+                    "img_id": img_id,
+                    "img_person": nbr
+                })
+            except Exception as e:
+                print(f"Error inserting data into MongoDB: {e}")
+                # Handle the error appropriately, e.g., logging or user notification
  
             frame = cv2.imencode('.jpg', face)[1].tobytes()
             yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
@@ -130,20 +135,45 @@ def face_recognition():  # generate frame by frame from camera
                 cv2.rectangle(img, (x, y + h + 40), (x + w, y + h + 50), color, 2)
                 cv2.rectangle(img, (x, y + h + 40), (x + int(w_filled), y + h + 50), (153, 255, 255), cv2.FILLED)
  
-                mycursor.execute("select a.img_person, b.prs_name, b.prs_skill "
-                                 "  from img_dataset a "
-                                 "  left join prs_mstr b on a.img_person = b.prs_nbr "
-                                 " where img_id = " + str(id))
-                row = mycursor.fetchone()
-                pnbr = row[0]
-                pname = row[1]
-                pskill = row[2]
+                try:
+                    result = db.img_dataset.aggregate([
+                        {"$match": {"img_id": id}},
+                        {"$lookup": {
+                            "from": "prs_mstr",
+                            "localField": "img_person",
+                            "foreignField": "prs_nbr",
+                            "as": "person_info"
+                        }},
+                        {"$unwind": "$person_info"},
+                        {"$project": {
+                            "img_person": 1,
+                            "prs_name": "$person_info.prs_name",
+                            "prs_skill": "$person_info.prs_skill"
+                        }}
+                    ])
+                    row = next(result, None)
+                    if row:
+                        pnbr = row['img_person']
+                        pname = row['prs_name']
+                        pskill = row['prs_skill']
+                    else:
+                        print(f"No data found for id: {id}")
+                        pnbr = pname = pskill = None
+                except Exception as e:
+                    print(f"Error querying database: {e}")
+                    pnbr = pname = pskill = None
  
                 if int(cnt) == 30:
                     cnt = 0
  
-                    mycursor.execute("insert into accs_hist (accs_date, accs_prsn) values('"+str(date.today())+"', '" + pnbr + "')")
-                    mydb.commit()
+                    try:
+                        db.accs_hist.insert_one({
+                            "accs_date": str(date.today()),
+                            "accs_prsn": pnbr
+                        })
+                    except Exception as e:
+                        print(f"Error inserting access history: {e}")
+                        # Consider adding appropriate error handling or logging here
  
                     cv2.putText(img, pname + ' | ' + pskill, (x - 10, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (153, 255, 255), 2, cv2.LINE_AA)
                     time.sleep(1)
@@ -193,16 +223,23 @@ def face_recognition():  # generate frame by frame from camera
  
 @app.route('/')
 def home():
-    mycursor.execute("select prs_nbr, prs_name, prs_skill, prs_active, prs_added from prs_mstr")
-    data = mycursor.fetchall()
+    try:
+        data = list(db.prs_mstr.find({}, {'_id': 0, 'prs_nbr': 1, 'prs_name': 1, 'prs_skill': 1, 'prs_active': 1, 'prs_added': 1}))
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        data = []
  
     return render_template('index.html', data=data)
  
 @app.route('/addprsn')
 def addprsn():
-    mycursor.execute("select ifnull(max(prs_nbr) + 1, 101) from prs_mstr")
-    row = mycursor.fetchone()
-    nbr = row[0]
+    try:
+        result = db.prs_mstr.find().sort("prs_nbr", -1).limit(1)
+        max_nbr = result[0]['prs_nbr'] if result.count() > 0 else 100
+        nbr = max_nbr + 1
+    except Exception as e:
+        print(f"Error fetching max prs_nbr: {e}")
+        nbr = 101  # Default value if there's an error
     # print(int(nbr))
  
     return render_template('addprsn.html', newnbr=int(nbr))
@@ -213,9 +250,19 @@ def addprsn_submit():
     prsname = request.form.get('txtname')
     prsskill = request.form.get('optskill')
  
-    mycursor.execute("""INSERT INTO `prs_mstr` (`prs_nbr`, `prs_name`, `prs_skill`) VALUES
-                    ('{}', '{}', '{}')""".format(prsnbr, prsname, prsskill))
-    mydb.commit()
+    try:
+        prs_mstr_collection = db['prs_mstr']
+        new_person = {
+            'prs_nbr': prsnbr,
+            'prs_name': prsname,
+            'prs_skill': prsskill
+        }
+        result = prs_mstr_collection.insert_one(new_person)
+        if not result.inserted_id:
+            raise Exception("Failed to insert new person")
+    except Exception as e:
+        print(f"Error inserting new person: {e}")
+        return jsonify({'error': 'Failed to add new person'}), 500
  
     # return redirect(url_for('home'))
     return redirect(url_for('vfdataset_page', prs=prsnbr))
@@ -238,51 +285,115 @@ def video_feed():
 @app.route('/fr_page')
 def fr_page():
     """Video streaming home page."""
-    mycursor.execute("select a.accs_id, a.accs_prsn, b.prs_name, b.prs_skill, a.accs_added "
-                     "  from accs_hist a "
-                     "  left join prs_mstr b on a.accs_prsn = b.prs_nbr "
-                     " where a.accs_date = curdate() "
-                     " order by 1 desc")
-    data = mycursor.fetchall()
+    try:
+        pipeline = [
+            {
+                "$match": {
+                    "accs_date": datetime.now().strftime("%Y-%m-%d")
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "prs_mstr",
+                    "localField": "accs_prsn",
+                    "foreignField": "prs_nbr",
+                    "as": "person_info"
+                }
+            },
+            {
+                "$unwind": "$person_info"
+            },
+            {
+                "$project": {
+                    "accs_id": 1,
+                    "accs_prsn": 1,
+                    "prs_name": "$person_info.prs_name",
+                    "prs_skill": "$person_info.prs_skill",
+                    "accs_added": 1
+                }
+            },
+            {
+                "$sort": {"accs_id": -1}
+            }
+        ]
+        data = list(mongo.db.accs_hist.aggregate(pipeline))
+    except Exception as e:
+        app.logger.error(f"Error fetching data: {str(e)}")
+        data = []
  
     return render_template('fr_page.html', data=data)
  
  
 @app.route('/countTodayScan')
 def countTodayScan():
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="",
-        database="flask_db"
-    )
-    mycursor = mydb.cursor()
+    try:
+        client = MongoClient('mongodb://localhost:27017/')
+        db = client['flask_db']
+        collection = db['accs_hist']
+
+        today = datetime.now().date()
+        rowcount = collection.count_documents({'accs_date': today})
+
+        return jsonify({'rowcount': rowcount})
+    except Exception as e:
+        app.logger.error(f"Error in countTodayScan: {str(e)}")
+        return jsonify({'error': 'An error occurred while counting today\'s scans'}), 500
+    finally:
+        if 'client' in locals():
+            client.close()
  
-    mycursor.execute("select count(*) "
-                     "  from accs_hist "
-                     " where accs_date = curdate() ")
-    row = mycursor.fetchone()
-    rowcount = row[0]
  
-    return jsonify({'rowcount': rowcount})
- 
- 
-@app.route('/loadData', methods = ['GET', 'POST'])
+@app.route('/loadData', methods=['GET', 'POST'])
 def loadData():
-    mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        passwd="",
-        database="flask_db"
-    )
-    mycursor = mydb.cursor()
- 
-    mycursor.execute("select a.accs_id, a.accs_prsn, b.prs_name, b.prs_skill, date_format(a.accs_added, '%H:%i:%s') "
-                     "  from accs_hist a "
-                     "  left join prs_mstr b on a.accs_prsn = b.prs_nbr "
-                     " where a.accs_date = curdate() "
-                     " order by 1 desc")
-    data = mycursor.fetchall()
+    try:
+        client = pymongo.MongoClient("mongodb://localhost:27017/")
+        db = client["flask_db"]
+        accs_hist = db["accs_hist"]
+        prs_mstr = db["prs_mstr"]
+
+        pipeline = [
+            {
+                "$match": {
+                    "accs_date": datetime.now().strftime("%Y-%m-%d")
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "prs_mstr",
+                    "localField": "accs_prsn",
+                    "foreignField": "prs_nbr",
+                    "as": "person_info"
+                }
+            },
+            {
+                "$unwind": "$person_info"
+            },
+            {
+                "$project": {
+                    "accs_id": 1,
+                    "accs_prsn": 1,
+                    "prs_name": "$person_info.prs_name",
+                    "prs_skill": "$person_info.prs_skill",
+                    "accs_added": {
+                        "$dateToString": {
+                            "format": "%H:%M:%S",
+                            "date": "$accs_added"
+                        }
+                    }
+                }
+            },
+            {
+                "$sort": {"accs_id": -1}
+            }
+        ]
+
+        data = list(accs_hist.aggregate(pipeline))
+        return jsonify(response=data)
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+    finally:
+        if client:
+            client.close()
  
     return jsonify(response = data)
  
