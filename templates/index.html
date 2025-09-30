@@ -7,49 +7,241 @@
 
 {% include "navbar.html" %}
 
-<section class="py-1">
-    <div class="row mt-5">
-        <div class="col-lg-8 offset-lg-2">
-            <h3>Personnel Data</h3>
-            <hr>
-            <div class="row">
-                <div class="col-lg-4">
-                    <a href="/addprsn" type="button" class="btn btn-success btn-lg"><b>Add Personnel</b></a>
-                </div>
-                <div class="col-lg-2">
-                </div>
-                <div class="col-lg-4">
-                    <a href="/fr_page" type="button" class="btn btn-info btn-lg"><b>Face Recognition</b></a>
+<!-- Debug Panel -->
+<div class="container mx-auto mt-8 px-4">
+    <div class="bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-6 shadow-xl">
+        <h5 class="text-white font-semibold mb-4 flex items-center">
+            <i class="fas fa-bug mr-3 text-blue-400"></i>System Debug Information
+        </h5>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-gray-700 rounded-lg p-4">
+                <div class="text-sm text-gray-300 mb-1">Status</div>
+                <div class="text-green-400 font-semibold flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>Online
                 </div>
             </div>
+            <div class="bg-gray-700 rounded-lg p-4">
+                <div class="text-sm text-gray-300 mb-1">Database</div>
+                <div class="text-green-400 font-semibold flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>Connected
+                </div>
+            </div>
+            <div class="bg-gray-700 rounded-lg p-4">
+                <div class="text-sm text-gray-300 mb-1">Camera</div>
+                <div class="text-yellow-400 font-semibold flex items-center">
+                    <i class="fas fa-circle mr-2"></i>Ready
+                </div>
+            </div>
+            <div class="bg-gray-700 rounded-lg p-4">
+                <div class="text-sm text-gray-300 mb-1">Classifier</div>
+                <div id="classifier-status" class="text-gray-400 font-semibold flex items-center">
+                    <i class="fas fa-circle mr-2"></i>Checking...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-            <br>
-            <table class="table" style="width: 80%">
-                <thead>
-                    <tr>
-                        <th>Person Id</th>
-                        <th>Name</th>
-                        <th>Skill</th>
-                        <th>Active</th>
-                        <th>Added</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in data %}
-                        <tr>
-                            <td>{{item[0]}}</td>
-                            <td>{{item[1]}}</td>
-                            <td>{{item[2]}}</td>
-                            <td>{{item[3]}}</td>
-                            <td>{{item[4]}}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
+<section class="py-12">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4 fade-in">Personnel Management</h1>
+            <p class="text-xl text-gray-600">Manage your organization's personnel data and face recognition system</p>
+        </div>
 
-            </table>
+        <!-- Action Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 text-center">
+                <div class="mb-6">
+                    <i class="fas fa-user-plus text-6xl text-blue-500"></i>
+                </div>
+                <h5 class="text-2xl font-semibold text-gray-800 mb-4">Add New Personnel</h5>
+                <p class="text-gray-600 mb-6">Register new employees or individuals to the system with their personal information.</p>
+                <a href="/addprsn" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Add Person
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 text-center">
+                <div class="mb-6">
+                    <i class="fas fa-camera text-6xl text-green-500"></i>
+                </div>
+                <h5 class="text-2xl font-semibold text-gray-800 mb-4">Face Recognition</h5>
+                <p class="text-gray-600 mb-6">Start the live face recognition system to identify and log personnel access.</p>
+                <a href="/fr_page" class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-play mr-2"></i>Start Recognition
+                </a>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-8 text-center">
+                <div class="mb-6">
+                    <i class="fas fa-chart-bar text-6xl text-cyan-500"></i>
+                </div>
+                <h5 class="text-2xl font-semibold text-gray-800 mb-4">System Statistics</h5>
+                <p class="text-gray-600 mb-6">View system performance, recognition accuracy, and access logs.</p>
+                <button class="inline-flex items-center px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 transition-colors" onclick="showStats()">
+                    <i class="fas fa-chart-line mr-2"></i>View Stats
+                </button>
+            </div>
+        </div>
+
+        <!-- Personnel Data Table -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                <h5 class="text-white font-semibold mb-0 flex items-center">
+                    <i class="fas fa-users mr-3"></i>Personnel Database
+                </h5>
+            </div>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <i class="fas fa-id-badge mr-2"></i>ID
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <i class="fas fa-user mr-2"></i>Name
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <i class="fas fa-tools mr-2"></i>Skill
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <i class="fas fa-toggle-on mr-2"></i>Status
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <i class="fas fa-calendar mr-2"></i>Added
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <i class="fas fa-cogs mr-2"></i>Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% if data %}
+                                {% for item in data %}
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ item.get('prs_nbr', '') }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <div class="text-sm font-medium text-gray-900">{{ item.get('prs_name', '') }}</div>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                {{ item.get('prs_skill', '') }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap">
+                                            {% if item.get('prs_active', '') == '1' %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <i class="fas fa-check-circle mr-1"></i>Active
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    <i class="fas fa-times-circle mr-1"></i>Inactive
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ item.get('prs_added', '') }}
+                                        </td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex space-x-2">
+                                                <button class="text-blue-600 hover:text-blue-900 p-1 rounded" title="Edit Person" onclick="editPerson('{{ item.get('prs_nbr', '') }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="text-cyan-600 hover:text-cyan-900 p-1 rounded" title="View Images" onclick="viewImages('{{ item.get('prs_nbr', '') }}')">
+                                                    <i class="fas fa-images"></i>
+                                                </button>
+                                                <a href="/train_classifier/{{ item.get('prs_nbr', '') }}" class="text-green-600 hover:text-green-900 p-1 rounded" title="Train Model">
+                                                    <i class="fas fa-graduation-cap"></i>
+                                                </a>
+                                                <button class="text-red-600 hover:text-red-900 p-1 rounded" title="Delete Person" onclick="deletePerson('{{ item.get('prs_nbr', '') }}', '{{ item.get('prs_name', '') }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="px-4 py-12 text-center">
+                                        <i class="fas fa-users text-6xl text-gray-400 mb-4"></i>
+                                        <h5 class="text-gray-500 text-lg font-medium mb-2">No Personnel Found</h5>
+                                        <p class="text-gray-400 mb-4">Get started by adding your first person to the system.</p>
+                                        <a href="/addprsn" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                            <i class="fas fa-plus mr-2"></i>Add First Person
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </section>
+
+<script>
+// Check classifier status on page load
+$(document).ready(function() {
+    checkClassifierStatus();
+});
+
+function checkClassifierStatus() {
+    fetch('/check_classifier')
+        .then(response => response.json())
+        .then(data => {
+            const statusEl = document.getElementById('classifier-status');
+            if (data.exists) {
+                statusEl.innerHTML = '<span class="text-success">✓ Trained</span>';
+            } else {
+                statusEl.innerHTML = '<span class="text-warning">○ Not Trained</span>';
+            }
+        })
+        .catch(error => {
+            document.getElementById('classifier-status').innerHTML = '<span class="text-danger">✗ Error</span>';
+        });
+}
+
+function editPerson(id) {
+    alert('Edit functionality coming soon! Person ID: ' + id);
+}
+
+function viewImages(id) {
+    alert('Image gallery coming soon! Person ID: ' + id);
+}
+
+function trainModel(id) {
+    if (confirm('Start training the face recognition model for Person ID: ' + id + '?')) {
+        window.location.href = '/train_classifier/' + id;
+    }
+}
+
+function deletePerson(id, name) {
+    if (confirm('Are you sure you want to delete ' + name + ' (ID: ' + id + ')?\n\nThis will also delete all associated images and access records. This action cannot be undone.')) {
+        fetch('/delete_person/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Person deleted successfully!');
+                location.reload();
+            } else {
+                alert('Error deleting person: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error deleting person: ' + error);
+        });
+    }
+}
+</script>
 
 </body>
 </html>

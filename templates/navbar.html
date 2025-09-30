@@ -1,10 +1,58 @@
-<nav class="navbar navbar-expand-lg py-2 navbar-dark bg-dark shadow-sm">
-    <div class="container">
-        <a href="#" class="navbar-brand">
-          <!-- Logo Image -->
-          <img src="{{ url_for('static', filename='img/logo.png') }}" width="45" alt="" class="d-inline-block align-middle mr-2">
-          <!-- Logo Text -->
-          <span class="font-weight-bold">Flask OpenCV Face Recognition</span>
-        </a>
+<nav class="bg-white shadow-lg border-b border-gray-200">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+            <!-- Logo Section -->
+            <a href="{{ url_for('statistics') }}" class="flex items-center text-gray-800 hover:text-blue-600 transition-colors">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" width="35" alt="" class="mr-3">
+                <span class="font-semibold text-lg"> Face Recognition</span>
+            </a>
+
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="{{ url_for('statistics') }}" class="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'statistics' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-chart-bar mr-2"></i>Statistics
+                </a>
+                <a href="{{ url_for('personnel') }}" class="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'personnel' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-users mr-2"></i>Personnel
+                </a>
+                <a href="{{ url_for('fr_page') }}" class="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'fr_page' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-camera mr-2"></i>Recognition
+                </a>
+                <a href="{{ url_for('addprsn') }}" class="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'addprsn' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-user-plus mr-2"></i>Add Person
+                </a>
+            </div>
+
+            <!-- Status Indicator -->
+            <div class="flex items-center">
+                <div class="flex items-center text-sm text-gray-600">
+                    <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <span class="hidden sm:inline">System Online</span>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden ml-4 text-gray-600 hover:text-gray-800 focus:outline-none" type="button" data-toggle="collapse" data-target="#mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200">
+                <a href="{{ url_for('statistics') }}" class="flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'statistics' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-chart-bar mr-3"></i>Statistics
+                </a>
+                <a href="{{ url_for('personnel') }}" class="flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'personnel' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-users mr-3"></i>Personnel
+                </a>
+                <a href="{{ url_for('fr_page') }}" class="flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'fr_page' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-camera mr-3"></i>Recognition
+                </a>
+                <a href="{{ url_for('addprsn') }}" class="flex items-center px-3 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-all {% if request.endpoint == 'addprsn' %}bg-blue-100 text-blue-800 font-medium{% endif %}">
+                    <i class="fas fa-user-plus mr-3"></i>Add Person
+                </a>
+            </div>
+        </div>
     </div>
 </nav>

@@ -3,3 +3,4 @@ mysql-connector
 opencv-python
 opencv-contrib-python
 Pillow
+pymongo

@@ -3,93 +3,240 @@
 <head>
     {% include "head.html" %}
 </head>
-<body >
- 
+<body>
+
 {% include "navbar.html" %}
- 
-<div class="container-fluid">
-    <div class="row mt-5 mb-5">
-        <div class="col-md-8">
-            <img src="{{ url_for('video_feed') }}" width="100%" class="img-thumbnail">
+
+<section class="py-12">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4 fade-in">Live Face Recognition</h1>
+            <p class="text-xl text-gray-600">AI-powered facial recognition system with real-time identification</p>
         </div>
-        <div class="col-md-4" style="height:500px; overflow-y:auto;">
-            <h3>Today Scan</h3>
-            <table class="table" >
-                <thead>
-                    <tr>
-                        <th>Person #</th>
-                        <th>Name</th>
-                        <th>Skill</th>
-                        <th>Added</th>
-                    </tr>
-                </thead>
-                <tbody id="scandata">
- 
-                </tbody>
-            </table>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Video Feed Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                        <h5 class="text-white font-semibold mb-0 flex items-center">
+                            <i class="fas fa-video mr-3"></i>Live Camera Feed
+                        </h5>
+                    </div>
+                    <div class="p-0">
+                        <div class="relative rounded-b-xl overflow-hidden">
+                            <img src="{{ url_for('video_feed') }}" class="w-full h-auto block" id="videoFeed" style="max-height: 400px;">
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-4">
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="flex items-center justify-center">
+                                <span class="inline-block w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                                <small class="text-gray-600">Camera Active</small>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-brain text-blue-500 mr-2"></i>
+                                <small class="text-gray-600"> Processing</small>
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-clock text-cyan-500 mr-2"></i>
+                                <small class="text-gray-600" id="current-time">--:--:--</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status and Actions Section -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Recognition Status -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-user-check mr-2 text-green-500"></i>Recognition Status
+                    </h6>
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <strong class="text-gray-800">Current Status:</strong>
+                            <span id="recognition-status" class="block text-blue-600 mt-1">Waiting for face detection...</span>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <strong class="text-gray-800">Confidence Threshold:</strong>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 ml-2">
+                                <i class="fas fa-check-circle mr-1"></i>90%
+                            </span>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <strong class="text-gray-800">Today's Scans:</strong>
+                            <span id="scan-count" class="block text-purple-600 mt-1 font-semibold">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-bolt mr-2 text-yellow-500"></i>Quick Actions
+                    </h6>
+                    <div class="space-y-3">
+                        <a href="{{ url_for('home') }}" class="flex items-center justify-center w-full px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-users mr-2"></i>Manage Personnel
+                        </a>
+                        <a href="{{ url_for('addprsn') }}" class="flex items-center justify-center w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-user-plus mr-2"></i>Add New Person
+                        </a>
+                        <button class="flex items-center justify-center w-full px-4 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors" onclick="exportScans()">
+                            <i class="fas fa-download mr-2"></i>Export Data
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
- 
+</section>
+
 <script type="text/javascript">
-    $(document).ready(function() {
-        let lastcnt = 0;
-        let cnt;
-        chkNewScan();
- 
-        function chkNewScan() {
-            countTodayScan();
-            setTimeout(chkNewScan, 1000);
-        }
- 
-        function countTodayScan() {
-            $.ajax({
-                url: '/countTodayScan',
-                type: 'GET',
-                dataType: 'json',
-                success: function(data) {
-                    cnt = data.rowcount;
-                    if (cnt > lastcnt) {
-                        reloadTable();
-                    }
- 
-                    lastcnt = cnt;
-                },
-                error: function(result){
-                    console.log('no result!')
-                }
-            })
-        }
- 
-        function reloadTable() {
-            $.ajax({
-                url: '/loadData',
-                type: 'GET',
-                dataType: 'json',
-                success: function(response){
-                    var tr = $("#scandata");
-                    tr.empty();
- 
-                    $.each(response, function(index, item) {
-                        if (item.length > 0) {
-                            for (let i = 0; i < item.length; i++) {
-                                tr.append('<tr>'+
-                                                '<td>'+item[i][1]+'</td>'+
-                                                '<td>'+item[i][2]+'</td>'+
-                                                '<td>'+item[i][3]+'</td>'+
-                                                '<td>'+item[i][4]+'</td>'+
-                                           '</tr>');
+$(document).ready(function() {
+    let lastcnt = 0;
+    let cnt;
+
+    // Initialize
+    updateTime();
+    chkNewScan();
+
+    // Update time every second
+    setInterval(updateTime, 1000);
+
+    function chkNewScan() {
+        countTodayScan();
+        setTimeout(chkNewScan, 2000); // Check every 2 seconds
+    }
+
+    function countTodayScan() {
+        $.ajax({
+            url: '/countTodayScan',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                cnt = data.rowcount;
+                document.getElementById('scan-count').textContent = cnt;
+
+                if (cnt > lastcnt) {
+                    // Load latest data and show modal
+                    $.ajax({
+                        url: '/loadData',
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(response){
+                            if (response.response && response.response.length > 0) {
+                                showDetectionModal(response.response[0]);
                             }
                         }
                     });
-                },
-                error: function(result){
-                    console.log('no result!')
+                    updateRecognitionStatus('New scan detected!', 'success');
                 }
-            });
-        }
-    });
+
+                lastcnt = cnt;
+            },
+            error: function(result){
+                console.log('Count scan error:', result);
+                document.getElementById('scan-count').textContent = 'Error';
+            }
+        });
+    }
+
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('current-time').textContent = timeString;
+    }
+
+    function updateRecognitionStatus(message, type) {
+        const statusEl = document.getElementById('recognition-status');
+        let colorClass = 'text-blue-600';
+        if (type === 'success') colorClass = 'text-green-600';
+        else if (type === 'warning') colorClass = 'text-yellow-600';
+        else if (type === 'danger') colorClass = 'text-red-600';
+
+        statusEl.innerHTML = '<span class="' + colorClass + '">' + message + '</span>';
+
+        // Auto-clear after 5 seconds
+        setTimeout(() => {
+            statusEl.textContent = 'Waiting for face detection...';
+        }, 5000);
+    }
+
+    // Global functions
+    window.exportScans = function() {
+        // Create a temporary link to download the CSV
+        const link = document.createElement('a');
+        link.href = '/export_scans';
+        link.download = 'access_log.csv';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        updateRecognitionStatus('Exporting data...', 'info');
+    };
+
+    // Show detection modal
+    window.showDetectionModal = function(scanData) {
+        const modal = document.getElementById('detectionModal');
+        document.getElementById('modal-id').textContent = scanData.accs_prsn;
+        document.getElementById('modal-name').textContent = scanData.prs_name;
+        document.getElementById('modal-skill').textContent = scanData.prs_skill;
+        document.getElementById('modal-time').textContent = scanData.accs_added;
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 5000); // Auto hide after 5 seconds
+
+        // Update last detected
+        const lastDetectedEl = document.getElementById('last-detected');
+        lastDetectedEl.innerHTML = `
+            <div class="text-sm">
+                <div class="font-medium text-gray-800">${scanData.prs_name}</div>
+                <div class="text-gray-600">ID: ${scanData.accs_prsn} | ${scanData.prs_skill}</div>
+                <div class="text-xs text-gray-500">${scanData.accs_added}</div>
+            </div>
+        `;
+    };
+});
 </script>
- 
+
+<!-- Detection Modal -->
+<div id="detectionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4">
+        <div class="text-center">
+            <div class="bg-green-100 p-4 rounded-full inline-block mb-4">
+                <i class="fas fa-check-circle text-green-600 text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Person Detected!</h3>
+            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                <div class="grid grid-cols-2 gap-4 text-left">
+                    <div>
+                        <p class="text-sm text-gray-600">ID</p>
+                        <p class="font-semibold text-gray-800" id="modal-id"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Name</p>
+                        <p class="font-semibold text-gray-800" id="modal-name"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Department</p>
+                        <p class="font-semibold text-gray-800" id="modal-skill"></p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Time</p>
+                        <p class="font-semibold text-gray-800" id="modal-time"></p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="document.getElementById('detectionModal').classList.add('hidden')" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

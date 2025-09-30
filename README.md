@@ -14,14 +14,26 @@
 3. Application Overview:
    This is a room access control application where individuals must undergo facial scanning before entering restricted areas. The system records personnel data in the database upon entry.
 
+
 4. Create Project and Install Packages:
-   - Create a new project in your preferred IDE (e.g., PyCharm, VSCode).
-   - Name the project `FlaskOpenCV_FaceRecognition`.
-   - Set up a virtual environment for the project.
-   - Install the required packages using pip:
-     ```
-     pip install Flask pymongo opencv-python opencv-contrib-python Pillow
-     ```
+    - Create a new project in your preferred IDE (e.g., PyCharm, VSCode).
+    - Name the project `FlaskOpenCV_FaceRecognition`.
+    - **Create and activate a virtual environment (venv):**
+     
+       On Windows:
+       ```
+       python -m venv venv
+       venv\Scripts\activate
+       ```
+       On macOS/Linux:
+       ```
+       python3 -m venv venv
+       source venv/bin/activate
+       ```
+    - Install the required packages using pip:
+       ```
+       pip install -r requirements.txt
+       ```
 
 5. Project Setup:
    - Clone this repository or download the source code.

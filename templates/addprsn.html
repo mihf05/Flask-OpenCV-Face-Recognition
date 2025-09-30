@@ -7,45 +7,157 @@
 
 {% include "navbar.html" %}
 
-<section class="py-1">
-    <div class="row mt-5">
-        <div class="col-lg-8 offset-lg-2">
-            <h3>Add Personnel</h3>
-            <hr>
-            <form class="form" method="post" action="/addprsn_submit">
-                <div class="form-group row">
-                    <label for="txtnbr" class="col-sm-2 col-form-label">Person Id</label>
-                    <div class="col-sm-2">
-                        <input type="text" class="form-control" id="txtnbr" name="txtnbr" value={{ newnbr }} readonly>
+<section class="py-12">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+                    <h4 class="text-white font-semibold mb-0 flex items-center">
+                        <i class="fas fa-user-plus mr-3"></i>Add New Personnel
+                    </h4>
+                </div>
+                <div class="p-6">
+                    <!-- Progress Indicator -->
+                    <div class="mb-6">
+                        <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: 33%"></div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>Step 1: Personal Info</span>
+                            <span>Step 2: Capture Images</span>
+                            <span>Step 3: Train Model</span>
+                        </div>
+                    </div>
+
+                    <form class="space-y-6" method="post" action="/addprsn_submit">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="txtnbr" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-id-badge mr-2 text-blue-500"></i>Person ID
+                                </label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="txtnbr" name="txtnbr" value="{{ newnbr }}" readonly>
+                                <p class="mt-1 text-sm text-gray-500">Auto-generated unique identifier</p>
+                            </div>
+                            <div>
+                                <label for="txtname" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-user mr-2 text-blue-500"></i>Full Name
+                                </label>
+                                <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="txtname" name="txtname" placeholder="Enter full name" required>
+                                <p class="mt-1 text-sm text-gray-500">Enter the person's complete name</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="optskill" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-tools mr-2 text-blue-500"></i>Department/Skill
+                                </label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" name="optskill" id="optskill" required>
+                                    <option value="" disabled selected>Select department</option>
+                                    <option value="SOFTWARE">💻 Software Development</option>
+                                    <option value="HARDWARE">🔧 Hardware Engineering</option>
+                                    <option value="ELECTRICAL">⚡ Electrical Engineering</option>
+                                    <option value="MANAGEMENT">👔 Management</option>
+                                    <option value="SALES">📈 Sales & Marketing</option>
+                                    <option value="HR">👥 Human Resources</option>
+                                </select>
+                                <p class="mt-1 text-sm text-gray-500">Select the person's primary department</p>
+                            </div>
+                            <div>
+                                <label for="txtemail" class="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                                    <i class="fas fa-envelope mr-2 text-blue-500"></i>Email (Optional)
+                                </label>
+                                <input type="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="txtemail" name="txtemail" placeholder="person@company.com">
+                                <p class="mt-1 text-sm text-gray-500">Contact email address</p>
+                            </div>
+                        </div>
+
+                        <!-- Debug Info -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h6 class="text-blue-800 font-semibold mb-2 flex items-center">
+                                <i class="fas fa-info-circle mr-2"></i>Next Steps
+                            </h6>
+                            <ul class="text-blue-700 text-sm space-y-1">
+                                <li>After adding personnel info, you'll capture face images</li>
+                                <li>Aim for 20-30 images from different angles</li>
+                                <li>Train the  model for accurate recognition</li>
+                            </ul>
+                        </div>
+
+                        <div class="flex justify-center space-x-4">
+                            <button type="submit" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-save mr-2"></i>Save & Continue
+                            </button>
+                            <a href="/" class="inline-flex items-center px-6 py-3 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="bg-white rounded-xl shadow-lg mt-6 p-6">
+                <h6 class="text-gradient mb-4 flex items-center">
+                    <i class="fas fa-lightbulb mr-2 text-yellow-500"></i>Pro Tips for Better Recognition
+                </h6>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                            <small class="text-gray-700">Ensure good lighting during image capture</small>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                            <small class="text-gray-700">Remove glasses if possible for better accuracy</small>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                            <small class="text-gray-700">Capture images from different angles</small>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-1"></i>
+                            <small class="text-gray-700">Maintain neutral facial expressions</small>
+                        </div>
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label for="txtname" class="col-sm-2 col-form-label">Name</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="txtname" name="txtname" required>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label for="optskill" class="col-sm-2 col-form-label">Skill</label>
-                    <div class="col-sm-4">
-                        <select class="form-control" name="optskill" id="optskill">
-                            <option value="SOFTWARE">Software</option>
-                            <option value="HARDWARE">Hardware</option>
-                            <option value="ELECTRICAL">Electrical</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group row">
-                    <label class="col-sm-2 col-form-label"></label>
-                    <div class="col-sm-8">
-                        <input type="submit" class="btn btn-primary btn-lg" value="Next">
-                        <a href="/" type="button" class="btn btn-warning btn-lg"><b>Back</b></a>
-                    </div>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </section>
+
+<script>
+// Form validation and enhancements
+$(document).ready(function() {
+    // Auto-focus on name field
+    $('#txtname').focus();
+
+    // Real-time validation
+    $('#txtname').on('input', function() {
+        const name = $(this).val().trim();
+        if (name.length < 2) {
+            $(this).removeClass('border-gray-300 focus:ring-blue-500').addClass('border-red-300 focus:ring-red-500');
+        } else {
+            $(this).removeClass('border-red-300 focus:ring-red-500').addClass('border-green-300 focus:ring-green-500');
+        }
+    });
+
+    // Form submission with loading state
+    $('form').on('submit', function(e) {
+        const submitBtn = $(this).find('button[type="submit"]');
+        const originalText = submitBtn.html();
+
+        submitBtn.prop('disabled', true).html('<div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>Processing...');
+
+        // Re-enable after 3 seconds (in case of error)
+        setTimeout(function() {
+            submitBtn.prop('disabled', false).html(originalText);
+        }, 3000);
+    });
+});
+</script>
 
 </body>
 </html>

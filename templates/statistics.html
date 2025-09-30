@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "head.html" %}
+</head>
+<body class="bg-gray-50 font-inter">
+
+{% include "navbar.html" %}
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">System Statistics</h1>
+        <p class="text-gray-600">Monitor your face recognition system's performance and activity</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Personnel -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Personnel</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ stats.total_personnel }}</p>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Personnel -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Active Personnel</p>
+                    <p class="text-3xl font-bold text-green-600">{{ stats.active_personnel }}</p>
+                </div>
+                <div class="bg-green-100 p-3 rounded-full">
+                    <i class="fas fa-user-check text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Scans -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Today's Scans</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ stats.today_scans }}</p>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full">
+                    <i class="fas fa-calendar-day text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Scans -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 mb-1">Monthly Scans</p>
+                    <p class="text-3xl font-bold text-cyan-600">{{ stats.month_scans }}</p>
+                </div>
+                <div class="bg-cyan-100 p-3 rounded-full">
+                    <i class="fas fa-calendar-alt text-cyan-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and System Status -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- System Status -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-server mr-3 text-blue-600"></i>System Status
+            </h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-700">Database Connection</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <i class="fas fa-check-circle mr-1"></i>Connected
+                    </span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-700">Face Recognition Model</span>
+                    {% if stats.classifier_trained %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>Trained
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>Not Trained
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-700">Camera Status</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        <i class="fas fa-circle mr-1"></i>Ready
+                    </span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span class="text-gray-700">System Uptime</span>
+                    <span class="text-sm text-gray-600">{{ stats.system_uptime }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-chart-line mr-3 text-purple-600"></i>Performance Metrics
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-4">
+                        <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none" stroke="#E5E7EB" stroke-width="2"/>
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none" stroke="#10B981" stroke-width="2" stroke-dasharray="{{ stats.recognition_rate }}, 100"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-gray-800">{{ stats.recognition_rate | round(1) }}%</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Recognition Rate</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-4">
+                        <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none" stroke="#E5E7EB" stroke-width="2"/>
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none" stroke="#3B82F6" stroke-width="2" stroke-dasharray="{{ stats.system_uptime }}, 100"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-gray-800">{{ stats.system_uptime }}%</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">System Uptime</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="relative w-32 h-32 mx-auto mb-4">
+                        <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none" stroke="#E5E7EB" stroke-width="2"/>
+                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                  fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="{{ stats.response_score }}, 100"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-gray-800">{{ stats.response_score | round(1) }}%</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">Response Score</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center justify-between">
+            <span class="flex items-center">
+                <i class="fas fa-history mr-3 text-green-600"></i>Recent Activity
+            </span>
+            <span class="text-sm text-gray-500">Page {{ stats.pagination.page }} of {{ stats.pagination.total_pages }} ({{ stats.pagination.total_scans }} total)</span>
+        </h3>
+
+        <!-- Search and Filter -->
+        <div class="mb-4 flex flex-wrap gap-4">
+            <form method="GET" class="flex flex-wrap gap-4 w-full">
+                <div class="flex-1 min-w-0">
+                    <input type="text" name="search" value="{{ request.args.get('search', '') }}" placeholder="Search by name or ID..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex-shrink-0">
+                    <select name="filter" class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Time</option>
+                        <option value="today" {% if request.args.get('filter') == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if request.args.get('filter') == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if request.args.get('filter') == 'month' %}selected{% endif %}>This Month</option>
+                    </select>
+                </div>
+                <div class="flex-shrink-0">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search mr-2"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="space-y-3">
+            {% if stats.recent_scans %}
+                {% for scan in stats.recent_scans %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ scan.get('prs_name', 'Unknown') }} (ID: {{ scan.get('accs_prsn') }})</p>
+                                <p class="text-xs text-gray-500">{{ scan.get('date', '') }} {{ scan.get('time', '') }}</p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check mr-1"></i>Recognized
+                        </span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-500">No recent activity</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Pagination -->
+        {% if stats.pagination.total_pages > 1 %}
+        <div class="mt-6 flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ (stats.pagination.page - 1) * stats.pagination.per_page + 1 }} to {{ min(stats.pagination.page * stats.pagination.per_page, stats.pagination.total_scans) }} of {{ stats.pagination.total_scans }} entries
+            </div>
+            <div class="flex space-x-1">
+                {% if stats.pagination.has_prev %}
+                <a href="{{ url_for('statistics', page=stats.pagination.prev_page, per_page=stats.pagination.per_page, search=request.args.get('search'), filter=request.args.get('filter')) }}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+                {% for page_num in range(1, stats.pagination.total_pages + 1) %}
+                <a href="{{ url_for('statistics', page=page_num, per_page=stats.pagination.per_page, search=request.args.get('search'), filter=request.args.get('filter')) }}" class="px-3 py-2 text-sm font-medium {% if page_num == stats.pagination.page %}text-blue-600 bg-blue-50 border-blue-500{% else %}text-gray-500 bg-white border-gray-300{% endif %} border rounded-md hover:bg-gray-50">
+                    {{ page_num }}
+                </a>
+                {% endfor %}
+                {% if stats.pagination.has_next %}
+                <a href="{{ url_for('statistics', page=stats.pagination.next_page, per_page=stats.pagination.per_page, search=request.args.get('search'), filter=request.args.get('filter')) }}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                    Next
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Update statistics every 30 seconds
+setInterval(function() {
+    location.reload();
+}, 30000);
+</script>
+
+</body>
+</html>
