@@ -48,3 +48,21 @@
    - Access the application through your web browser at `http://localhost:5000`.
 
 Note: Make sure to handle sensitive data securely and follow best practices for production deployments.
+
+## Demo
+
+Here's a video demonstration of the Flask-OpenCV-Face-Recognition application:
+
+[Demo Video](demo/record.mp4)
+
+### Screenshots
+
+![Application Interface](demo/Screenshot_30-9-2025_221943_127.0.0.1.jpeg)
+
+![Face Recognition in Action](demo/Screenshot_30-9-2025_222013_127.0.0.1.jpeg)
+
+![Dataset Generation](demo/Screenshot_30-9-2025_222033_127.0.0.1.jpeg)
+
+![Access Control](demo/Screenshot_30-9-2025_22210_127.0.0.1.jpeg)
+
+![Statistics Page](demo/Screenshot_30-9-2025_222125_127.0.0.1.jpeg)
