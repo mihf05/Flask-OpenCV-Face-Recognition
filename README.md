@@ -53,7 +53,7 @@ Note: Make sure to handle sensitive data securely and follow best practices for 
 
 Here's a video demonstration of the Flask-OpenCV-Face-Recognition application:
 
-[Demo Video](demo/record.mp4)
+[Demo Video](https://youtu.be/SSPUkJklMYc?si=eUjet70mOBb4W-L8)
 
 ### Screenshots
 
